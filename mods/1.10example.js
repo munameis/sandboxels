@@ -1,40 +1,43 @@
-/* == Cheat Menu Mod for Sandboxels == */
+/* == Custom Category and Element Mod == */
 
-// برمجة زر K لفتح القائمة
-keybinds["KeyK"] = function() {
-    // طلب اسم العنصر من المستخدم
-    let itemName = prompt("أدخل اسم العنصر (مثال: wood, stone, fire):", "wood");
-    
-    if (itemName) {
-        // التأكد من وجود العنصر في اللعبة
-        if (elements[itemName]) {
-            // طلب العدد
-            let countInput = prompt("كم حبة تبي؟ (Count):", "10");
-            let count = parseInt(countInput);
+// 1. إنشاء الفئة الجديدة في القائمة
+if (!elementCategories.elmentz) {
+    elementCategories.elmentz = [];
+}
 
-            if (!isNaN(count) && count > 0) {
-                // إضافة العنصر للمخزن (Inventory) ليعمل في سرفايفل وغيره
-                // نستخدم inventoryLayout لإضافة الكمية
-                if (typeof inventory !== 'undefined') {
-                    inventory[itemName] = (inventory[itemName] || 0) + count;
-                    logMessage("تم إضافة " + count + " من " + itemName + " للمخزن!");
-                } else {
-                    // إذا كان اللعب في طور الكرييتف العادي
-                    logMessage("تم اختيار " + itemName + " (أنت في طور الإبداع)");
-                    currentElement = itemName;
-                }
-            } else {
-                alert("العدد غير صحيح!");
-            }
-        } else {
-            alert("هذا العنصر غير موجود! تأكد من الاسم بالإنجليزية.");
-        }
-    }
+// 2. تعريف مادة gicer ووظيفتها
+elements.gicer = {
+    color: "#3498db",
+    tool: function(pixel) {
+        // نتركها فارغة لأننا سنعتمد على الضغط من القائمة
+    },
+    category: "elmentz",
+    desc: "اضغط هنا لكتابة اسم العنصر الذي تريده",
 };
 
-// رسالة ترحيبية عند تشغيل المود
+// 3. تعديل سلوك الضغط على مادة gicer في القائمة
+// نستخدم روتين مخصص عند اختيار المادة
 runEveryTick(function() {
-    if (pixelTicks === 1) {
-        logMessage("مود القائمة السريعة جاهز! اضغط K للبدء.");
+    if (currentElement === "gicer") {
+        let itemName = prompt("Enter Element Name (e.g. wood, fire, stone):");
+        
+        if (itemName && elements[itemName]) {
+            currentElement = itemName; // تحويل الأداة فوراً للعنصر المختار
+            
+            // إضافة كمية للمخزون إذا كنت في طور السرفايفل
+            if (typeof inventory !== 'undefined') {
+                inventory[itemName] = (inventory[itemName] || 0) + 10; 
+            }
+            
+            logMessage("Switched to: " + itemName);
+        } else if (itemName) {
+            logMessage("Element not found!");
+            currentElement = "pencil"; // العودة للقلم العادي إذا لم يجد العنصر
+        } else {
+            currentElement = "pencil";
+        }
     }
 });
+
+// تحديث القائمة لإظهار الفئة الجديدة
+updateUI();
